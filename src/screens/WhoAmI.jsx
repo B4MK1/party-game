@@ -149,10 +149,6 @@ export default function WhoAmI({ onExit }) {
           <button onClick={() => answer(false)}>Алгасах</button>
           <button onClick={() => answer(true)}>Зөв ✓</button>
         </div>
-        <p style={{ fontSize: 12, opacity: 0.7 }}>
-          https:{String(debug.secure)} · ask:{String(debug.needsPermission)} ·
-          result:{debug.result} · z:{lastZ ?? "no data"}
-        </p>
       </div>
     );
 
