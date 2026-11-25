@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-const [debug, setDebug] = useState({});
-const [lastZ, setLastZ] = useState(null);
 import cards from "../data/whoami.json";
 
 function shuffle(arr) {
@@ -16,13 +14,15 @@ const ROUND = 60;
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 export default function WhoAmI({ onExit }) {
-  const [phase, setPhase] = useState("intro"); // intro | countdown | playing | done
+  const [phase, setPhase] = useState("intro");
   const [count, setCount] = useState(3);
   const [time, setTime] = useState(ROUND);
   const [card, setCard] = useState(null);
   const [score, setScore] = useState(0);
-  const [flash, setFlash] = useState(null); // "ok" | "skip" | null
+  const [flash, setFlash] = useState(null);
   const [tiltOn, setTiltOn] = useState(false);
+  const [debug, setDebug] = useState({});
+  const [lastZ, setLastZ] = useState(null);
 
   const deckRef = useRef(shuffle(cards));
   const armed = useRef(true);
@@ -45,37 +45,36 @@ export default function WhoAmI({ onExit }) {
   answerRef.current = answer;
 
   const start = async () => {
-  const hasMotion = typeof DeviceMotionEvent !== "undefined";
-  const needsPermission =
-    hasMotion && typeof DeviceMotionEvent.requestPermission === "function";
-  const info = {
-    secure: window.isSecureContext,
-    needsPermission,
-    result: "-",
+    const hasMotion = typeof DeviceMotionEvent !== "undefined";
+    const needsPermission =
+      hasMotion && typeof DeviceMotionEvent.requestPermission === "function";
+    const info = {
+      secure: window.isSecureContext,
+      needsPermission,
+      result: "-",
+    };
+
+    let ok = false;
+    if (needsPermission) {
+      try {
+        info.result = await DeviceMotionEvent.requestPermission();
+        ok = info.result === "granted";
+      } catch (err) {
+        info.result = "error: " + err.message;
+      }
+    } else if (hasMotion && window.isSecureContext) {
+      ok = true;
+    }
+
+    setDebug(info);
+    setTiltOn(ok);
+    setScore(0);
+    setTime(ROUND);
+    setCount(3);
+    armed.current = true;
+    setPhase("countdown");
   };
 
-  let ok = false;
-  if (needsPermission) {
-    try {
-      info.result = await DeviceMotionEvent.requestPermission();
-      ok = info.result === "granted";
-    } catch (err) {
-      info.result = "error: " + err.message;
-    }
-  } else if (hasMotion && window.isSecureContext) {
-    ok = true; // Android and others: no prompt needed
-  }
-
-  setDebug(info);
-  setTiltOn(ok);
-  setScore(0);
-  setTime(ROUND);
-  setCount(3);
-  armed.current = true;
-  setPhase("countdown");
-};
-
-  // 3-2-1 countdown
   useEffect(() => {
     if (phase !== "countdown") return;
     if (count === 0) {
@@ -87,7 +86,6 @@ export default function WhoAmI({ onExit }) {
     return () => clearTimeout(t);
   }, [phase, count]);
 
-  // round timer
   useEffect(() => {
     if (phase !== "playing") return;
     if (time <= 0) {
@@ -98,7 +96,6 @@ export default function WhoAmI({ onExit }) {
     return () => clearTimeout(t);
   }, [phase, time]);
 
-  // tilt detection
   useEffect(() => {
     if (phase !== "playing" || !tiltOn) return;
     const handler = (e) => {
@@ -107,12 +104,12 @@ export default function WhoAmI({ onExit }) {
       const z = g.z * (isIOS ? -1 : 1);
       setLastZ(Math.round(z * 10) / 10);
       if (Math.abs(z) < 3) {
-        armed.current = true; // phone back to upright
+        armed.current = true;
         return;
       }
       if (!armed.current) return;
-      if (z < -6) answerRef.current(true); // screen faces floor = correct
-      else if (z > 6) answerRef.current(false); // screen faces ceiling = skip
+      if (z < -6) answerRef.current(true);
+      else if (z > 6) answerRef.current(false);
     };
     window.addEventListener("devicemotion", handler);
     return () => window.removeEventListener("devicemotion", handler);
@@ -126,7 +123,7 @@ export default function WhoAmI({ onExit }) {
       <div className="screen">
         <h2>Би хэн бэ?</h2>
         <p>Утсаа духан дээрээ барь. Бусад нь тайлбарлаж өгнө.</p>
-        <p>Доош хазай = зөв ✓ &nbsp; Дээш хазай = алгасах →</p>
+        <p>Доош хазай = зөв ✓ &nbsp; Дээш хазай = алгасах</p>
         <button onClick={start}>Эхлэх</button>
         <button onClick={onExit}>Буцах</button>
       </div>
@@ -153,8 +150,8 @@ export default function WhoAmI({ onExit }) {
           <button onClick={() => answer(true)}>Зөв ✓</button>
         </div>
         <p style={{ fontSize: 12, opacity: 0.7 }}>
-            https:{String(debug.secure)} · ask:{String(debug.needsPermission)} ·
-            result:{debug.result} · z:{lastZ ?? "no data"}
+          https:{String(debug.secure)} · ask:{String(debug.needsPermission)} ·
+          result:{debug.result} · z:{lastZ ?? "no data"}
         </p>
       </div>
     );
