@@ -1,0 +1,8 @@
+[
+  { "id": 1, "category": "food", "text": "Бууз" },
+  { "id": 2, "category": "food", "text": "Хуушуур" },
+  { "id": 3, "category": "places", "text": "Хөвсгөл нуур" },
+  { "id": 4, "category": "student", "text": "Шалгалтын өмнөх шөнө" },
+  { "id": 5, "category": "places", "text": "Сүхбаатарын талбай" },
+  { "id": 6, "category": "student", "text": "Хоцорсон оюутан" }
+]
