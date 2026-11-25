@@ -5,6 +5,7 @@ import ModeSelect from "./screens/ModeSelect";
 import TruthDare from "./screens/TruthDare";
 import MostLikely from "./screens/MostLikely";
 import WhoAmI from "./screens/WhoAmI";
+import Impostor from "./screens/Impostor";
 
 export default function App() {
   const [screen, setScreen] = useState("home");
@@ -32,4 +33,6 @@ export default function App() {
     return <MostLikely onExit={() => setScreen("modes")} />;
   if (screen === "whoami")
     return <WhoAmI onExit={() => setScreen("modes")} />;
+  if (screen === "impostor")
+    return <Impostor players={players} onExit={() => setScreen("modes")} />;
 }
