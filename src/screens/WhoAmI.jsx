@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+const [debug, setDebug] = useState({});
+const [lastZ, setLastZ] = useState(null);
 import cards from "../data/whoami.json";
 
 function shuffle(arr) {
@@ -43,26 +45,35 @@ export default function WhoAmI({ onExit }) {
   answerRef.current = answer;
 
   const start = async () => {
-    // iPhone requires a permission request triggered by a tap
-    if (
-      typeof DeviceMotionEvent !== "undefined" &&
-      typeof DeviceMotionEvent.requestPermission === "function"
-    ) {
-      try {
-        const r = await DeviceMotionEvent.requestPermission();
-        setTiltOn(r === "granted");
-      } catch {
-        setTiltOn(false);
-      }
-    } else if (typeof DeviceMotionEvent !== "undefined") {
-      setTiltOn(true);
-    }
-    setScore(0);
-    setTime(ROUND);
-    setCount(3);
-    armed.current = true;
-    setPhase("countdown");
+  const hasMotion = typeof DeviceMotionEvent !== "undefined";
+  const needsPermission =
+    hasMotion && typeof DeviceMotionEvent.requestPermission === "function";
+  const info = {
+    secure: window.isSecureContext,
+    needsPermission,
+    result: "-",
   };
+
+  let ok = false;
+  if (needsPermission) {
+    try {
+      info.result = await DeviceMotionEvent.requestPermission();
+      ok = info.result === "granted";
+    } catch (err) {
+      info.result = "error: " + err.message;
+    }
+  } else if (hasMotion && window.isSecureContext) {
+    ok = true; // Android and others: no prompt needed
+  }
+
+  setDebug(info);
+  setTiltOn(ok);
+  setScore(0);
+  setTime(ROUND);
+  setCount(3);
+  armed.current = true;
+  setPhase("countdown");
+};
 
   // 3-2-1 countdown
   useEffect(() => {
@@ -94,6 +105,7 @@ export default function WhoAmI({ onExit }) {
       const g = e.accelerationIncludingGravity;
       if (!g || g.z == null) return;
       const z = g.z * (isIOS ? -1 : 1);
+      setLastZ(Math.round(z * 10) / 10);
       if (Math.abs(z) < 3) {
         armed.current = true; // phone back to upright
         return;
@@ -140,7 +152,10 @@ export default function WhoAmI({ onExit }) {
           <button onClick={() => answer(false)}>Алгасах</button>
           <button onClick={() => answer(true)}>Зөв ✓</button>
         </div>
-        {!tiltOn && <p>Хазайлт ажиллахгүй байна, товчоор тоглоно уу.</p>}
+        <p style={{ fontSize: 12, opacity: 0.7 }}>
+            https:{String(debug.secure)} · ask:{String(debug.needsPermission)} ·
+            result:{debug.result} · z:{lastZ ?? "no data"}
+        </p>
       </div>
     );
 
