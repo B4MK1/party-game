@@ -174,8 +174,10 @@ export default function Impostor({ players, onExit }) {
       <h1 style={{ color: "#e94560" }}>
         {game.impostors.map((i) => players[i]).join(", ")}
       </h1>
-      <p>Үг: {game.word}</p>
-      {similarMode && game.similar && <p>Хуурамчийн үг: {game.similar}</p>}
+      <div className="card">Үг: {game.word}</div>
+        {similarMode && game.similar && (
+      <div className="card">Хуурамчийн үг: {game.similar}</div>
+)}
       <button onClick={startGame}>Дахин тоглох</button>
       <button onClick={onExit}>Гарах</button>
     </div>

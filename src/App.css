@@ -63,6 +63,7 @@ input:not([type]) {
   background: var(--card);
   padding: 24px;
   border-radius: 18px;
+  
 }
 
 ul {
