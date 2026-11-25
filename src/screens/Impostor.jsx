@@ -19,23 +19,27 @@ export default function Impostor({ players, onExit }) {
   const [game, setGame] = useState(null);
   const [idx, setIdx] = useState(0);
   const [time, setTime] = useState(0);
+  const [similarMode, setSimilarMode] = useState(true);
 
   const maxImpostors = n >= 7 ? 3 : n >= 5 ? 2 : 1;
   const count = Math.min(impostorCount, maxImpostors);
 
   const startGame = () => {
-    const cat = data[Math.floor(Math.random() * data.length)];
-    const word = cat.words[Math.floor(Math.random() * cat.words.length)];
-    const impostors = shuffle([...Array(n).keys()]).slice(0, count);
-    setGame({
-      category: cat.category,
-      word,
-      impostors,
-      starter: Math.floor(Math.random() * n),
-    });
-    setIdx(0);
-    setTime(minutes * 60);
-    setPhase("pass");
+  const cat = data[Math.floor(Math.random() * data.length)];
+  const entry = cat.words[Math.floor(Math.random() * cat.words.length)];
+  const word = typeof entry === "string" ? entry : entry.word;
+  const similar = typeof entry === "string" ? null : entry.similar;
+  const impostors = shuffle([...Array(n).keys()]).slice(0, count);
+  setGame({
+    category: cat.category,
+    word,
+    similar,
+    impostors,
+    starter: Math.floor(Math.random() * n),
+  });
+  setIdx(0);
+  setTime(minutes * 60);
+  setPhase("pass");
   };
 
   const nextPlayer = () => {
@@ -99,6 +103,14 @@ export default function Impostor({ players, onExit }) {
           />{" "}
           Хуурамчид ангиллыг үзүүлэх
         </label>
+        <label>
+          <input
+            type="checkbox"
+            checked={similarMode}
+            onChange={(e) => setSimilarMode(e.target.checked)}
+          />{" "}
+          Хуурамч ойролцоо үг авна (өөрийгөө мэдэхгүй)
+        </label>
 
         {n < 3 && <p>Хамгийн багадаа 3 тоглогч хэрэгтэй.</p>}
         <button disabled={n < 3} onClick={startGame}>
@@ -118,25 +130,31 @@ export default function Impostor({ players, onExit }) {
     );
 
   if (phase === "show") {
-    const isImpostor = game.impostors.includes(idx);
+  const isImpostor = game.impostors.includes(idx);
+  const hasSimilar = similarMode && game.similar;
+
+  // Similar mode: the impostor's screen looks exactly like a normal one
+  if (!isImpostor || hasSimilar) {
     return (
       <div className="screen">
         <h2>{players[idx]}</h2>
-        {isImpostor ? (
-          <>
-            <h1 style={{ color: "#e94560" }}>Чи ХУУРАМЧ!</h1>
-            {showCategory && <p>Ангилал: {game.category}</p>}
-            <p>Бусдын үгийг таамагла.</p>
-          </>
-        ) : (
-          <>
-            <p>Ангилал: {game.category}</p>
-            <h1>{game.word}</h1>
-          </>
-        )}
+        <p>Ангилал: {game.category}</p>
+        <h1>{isImpostor ? game.similar : game.word}</h1>
         <button onClick={nextPlayer}>Ойлголоо, нуух</button>
       </div>
     );
+  }
+
+  // Classic mode: the impostor knows they are the impostor
+  return (
+    <div className="screen">
+      <h2>{players[idx]}</h2>
+      <h1 style={{ color: "#e94560" }}>Чи ХУУРАМЧ!</h1>
+      {showCategory && <p>Ангилал: {game.category}</p>}
+      <p>Бусдын үгийг таамагла.</p>
+      <button onClick={nextPlayer}>Ойлголоо, нуух</button>
+    </div>
+  );
   }
 
   if (phase === "discuss")
@@ -157,6 +175,7 @@ export default function Impostor({ players, onExit }) {
         {game.impostors.map((i) => players[i]).join(", ")}
       </h1>
       <p>Үг: {game.word}</p>
+      {similarMode && game.similar && <p>Хуурамчийн үг: {game.similar}</p>}
       <button onClick={startGame}>Дахин тоглох</button>
       <button onClick={onExit}>Гарах</button>
     </div>
