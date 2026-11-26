@@ -9,6 +9,21 @@ function shuffle(arr) {
   }
   return a;
 }
+function HoldToReveal({ children }) {
+  const [holding, setHolding] = useState(false);
+  return (
+    <div
+      className="card secret"
+      onPointerDown={() => setHolding(true)}
+      onPointerUp={() => setHolding(false)}
+      onPointerLeave={() => setHolding(false)}
+      onPointerCancel={() => setHolding(false)}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      {holding ? children : "👆 Харахын тулд дарж барь"}
+    </div>
+  );
+}
 
 export default function Impostor({ players, onExit }) {
   const n = players.length;
@@ -137,10 +152,10 @@ export default function Impostor({ players, onExit }) {
   if (!isImpostor || hasSimilar) {
     return (
       <div className="screen">
-        <h2>{players[idx]}</h2>
+        <HoldToReveal>
         <p>Ангилал: {game.category}</p>
         <h1>{isImpostor ? game.similar : game.word}</h1>
-        <button onClick={nextPlayer}>Ойлголоо, нуух</button>
+        </HoldToReveal>
       </div>
     );
   }

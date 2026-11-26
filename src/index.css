@@ -69,3 +69,14 @@ ul {
   list-style: none;
   padding: 0;
 }
+
+.secret {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
