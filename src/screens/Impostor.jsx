@@ -150,15 +150,17 @@ export default function Impostor({ players, onExit }) {
 
   // Similar mode: the impostor's screen looks exactly like a normal one
   if (!isImpostor || hasSimilar) {
-    return (
-      <div className="screen">
-        <HoldToReveal>
+  return (
+    <div className="screen">
+      <h2>{players[idx]}</h2>
+      <HoldToReveal key={idx}>
         <p>Ангилал: {game.category}</p>
         <h1>{isImpostor ? game.similar : game.word}</h1>
-        </HoldToReveal>
-      </div>
-    );
-  }
+      </HoldToReveal>
+      <button onClick={nextPlayer}>Ойлголоо, нуух</button>
+    </div>
+  );
+}
 
   // Classic mode: the impostor knows they are the impostor
   return (
