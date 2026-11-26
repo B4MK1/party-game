@@ -163,14 +163,17 @@ export default function Impostor({ players, onExit }) {
 }
 
   // Classic mode: the impostor knows they are the impostor
-  return (
-    <div className="screen">
-      <h2>{players[idx]}</h2>
+// Classic mode: the impostor knows they are the impostor
+return (
+  <div className="screen">
+    <h2>{players[idx]}</h2>
+    <HoldToReveal key={idx}>
       <h1 style={{ color: "#e94560" }}>Чи ХУУРАМЧ!</h1>
       {showCategory && <p>Ангилал: {game.category}</p>}
       <p>Бусдын үгийг таамагла.</p>
-      <button onClick={nextPlayer}>Ойлголоо, нуух</button>
-    </div>
+    </HoldToReveal>
+    <button onClick={nextPlayer}>Ойлголоо, нуух</button>
+  </div>
   );
   }
 
